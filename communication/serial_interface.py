@@ -20,18 +20,21 @@ class SerialInterface:
     def disconnect(self):
         if self.ser and self.ser.is_open:
             self.ser.close()
+        self.ser = None
 
     def is_connected(self) -> bool:
         return self.ser is not None and self.ser.is_open
-
-    def read_available(self) -> bytes:
+    
+    def read_all(self):
         if not self.is_connected():
             return b""
+        
+        return self.ser.read_all()
 
-        count = self.ser.in_waiting
-        if count > 0:
-            return self.ser.read(count)
-        return b""
+    def read(self, size=256):
+        if not self.is_connected():
+            return b""
+        return self.ser.read(size)
 
     def write(self, data: bytes):
         if self.is_connected():

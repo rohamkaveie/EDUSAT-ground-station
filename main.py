@@ -4,6 +4,9 @@ from gui.main_window import MainWindow
 
 def main():
     app = QApplication(sys.argv)
+
+    with open("style/style.qss", "r", encoding="utf-8") as f:
+        app.setStyleSheet(f.read())
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
