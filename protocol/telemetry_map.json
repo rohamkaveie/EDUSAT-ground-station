@@ -1,6 +1,6 @@
 {
   "telemetry": {
-    "-": {"name": "LED_State", "unit": "V", "scale": 1},
+    "0x0001": {"name": "LED_State", "unit": "V", "scale": 1},
     "0x0002": {"name": "Battery Temp", "unit": "°C", "scale": 0.1}
   },
   "events": {
@@ -8,3 +8,4 @@
     "0xF002": {"message": "Deployment Successful"}
   }
 }
+

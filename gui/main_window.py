@@ -36,7 +36,6 @@ from protocol.tlm_decoder import TelemetryDecoder
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("CubeSat Ground Station")
         self.resize(1200, 800)
 
         self.serial_interface = SerialInterface()
@@ -51,6 +50,14 @@ class MainWindow(QMainWindow):
         central = QWidget()
         self.setCentralWidget(central)
         main_layout = QVBoxLayout(central)
+        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(15)
+
+        # Example: 
+        main_layout.setStretch(0, 1)  # Connection Group (Small)
+        main_layout.setStretch(1, 4)  # Tabs/Telemetry (Large)
+        main_layout.setStretch(2, 2)  # Packet Monitor (Medium-Large)
+        main_layout.setStretch(3, 2)  # Console (Medium-Large)
 
         # ---------------- Connection Panel ----------------
         connection_group = QGroupBox("Connection")
@@ -63,6 +70,7 @@ class MainWindow(QMainWindow):
 
         self.refresh_button = QPushButton("Refresh")
         self.connect_button = QPushButton("Connect")
+        self.connect_button.setObjectName("connect_btn")
 
         self.refresh_button.clicked.connect(self.refresh_ports)
         self.connect_button.clicked.connect(self.toggle_connection)
@@ -120,7 +128,28 @@ class MainWindow(QMainWindow):
         # 4. Graph Tab
         graph_tab = QWidget()
         graph_layout = QVBoxLayout()
+
+        pg.setConfigOptions(
+            background="#FFFFFF",
+            foreground="#2B3446",
+            antialias=True
+        )
+
         self.plot_widget = pg.PlotWidget()
+
+        self.plot_widget.setBackground("#FFFFFF")
+        self.plot_widget.showGrid(x=True, y=True, alpha=0.2)
+
+        # Axis styles
+        axis_pen = pg.mkPen(color="#2B3446", width=1)
+        for axis in ["left", "bottom"]:
+            self.plot_widget.getAxis(axis).setPen(axis_pen)
+            self.plot_widget.getAxis(axis).setTextPen("#2B3446")
+
+        # Curve style
+        curve_pen = pg.mkPen(color="#EDB96F", width=2)
+        self.curve = self.plot_widget.plot(pen=curve_pen)
+
         graph_layout.addWidget(self.plot_widget)
         graph_tab.setLayout(graph_layout)
 
@@ -163,6 +192,7 @@ class MainWindow(QMainWindow):
 
         self.console = QTextEdit()
         self.console.setReadOnly(True)
+        self.console.setObjectName("console_output")
 
         console_layout.addWidget(self.console)
         console_group.setLayout(console_layout)
@@ -287,9 +317,11 @@ class MainWindow(QMainWindow):
 
     def handle_telemetry_packets(self, pkt):
         category, data = self.decoder.decode(pkt['tlm_id'], pkt['payload'],pkt['timestamp'])
-        
+
+        # print(data)        
         if category == "telemetry":
             # Update Telemetry Tab
+
             self.update_telemetry_ui(data) 
             # Update Graph Tab
             # self.update_graph(data['name'], float(data['val'].split()[0]))

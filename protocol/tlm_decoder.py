@@ -7,7 +7,9 @@ class TelemetryDecoder:
 
     def decode(self, tlm_id, payload,timestamp):
         hex_id = f"0x{tlm_id:04X}"
-        
+        # print(self.map['telemetry'])
+        # print(hex_id)
+
         # 1. Is it a Telemetry Variable?
         if hex_id in self.map["telemetry"]:
             # Assumption: Payload = [Value 2 bytes]

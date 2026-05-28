@@ -22,7 +22,7 @@ class ReceiverThread(QThread):
                 packets = self.tlm_processor.feed(data)
                 for pkt in packets:
                     self.packet_received.emit(pkt)
-            self.msleep(10)
+            self.msleep(100)
 
     def stop(self):
-        self._running = False
+        self.running = False

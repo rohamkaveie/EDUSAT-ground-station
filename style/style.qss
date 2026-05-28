@@ -1,244 +1,195 @@
-/* ===========================
-   Compact Density Baseline
-   =========================== */
-
-* {
-    font-family: "Segoe UI", "Inter", "Arial";
-    font-size: 11px;              /* smaller global font */
-}
-
+/* --- Global Settings --- */
 QMainWindow {
-    background-color: #0f1115;
+    background-color: #F8F7F2;
 }
 
 QWidget {
-    color: #d7dde6;
-    background: transparent;
+    font-family: "Segoe UI", "Inter", sans-serif;
+    font-size: 13px;
+    color: #2B3446;
 }
 
-QToolTip {
-    background-color: #141923;
-    color: #d7dde6;
-    border: 1px solid #2a3242;
-    padding: 2px 4px;
-}
-
-/* ===========================
-   Panels / GroupBoxes (tighter)
-   =========================== */
-
+/* --- Group Box (Connection/Console Sections) --- */
 QGroupBox {
-    background-color: #131722;
-    border: 1px solid #2a3242;
-    border-radius: 6px;          /* slightly less round */
-    margin-top: 10px;            /* reduce wasted title space */
-    padding: 6px;
+    font-weight: bold;
+    border: 1px solid #D1D1D1;
+    border-radius: 8px;
+    margin-top: 15px;
+    background-color: #FFFFFF;
 }
 
 QGroupBox::title {
     subcontrol-origin: margin;
     subcontrol-position: top left;
-    padding: 0 6px;
-    margin-left: 6px;
-    color: #7dd3fc;
-    font-weight: 600;
-    letter-spacing: 0.2px;
+    left: 15px;
+    padding: 2px 10px;
+    background-color: #2B3446; /* Dark "Tag" style for titles */
+    color: #FFFFFF;
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 11px;
 }
 
-/* ===========================
-   Labels / Text
-   =========================== */
-
-QLabel {
-    color: #cfd6e4;
-}
-
-/* ===========================
-   Inputs (tighter)
-   =========================== */
-
-QLineEdit, QPlainTextEdit, QTextEdit {
-    background-color: #0b0f17;
-    border: 1px solid #2a3242;
-    border-radius: 5px;
-    padding: 3px 6px;            /* reduced padding */
-    selection-background-color: #2563eb;
-    selection-color: white;
-}
-
-QLineEdit:focus, QPlainTextEdit:focus, QTextEdit:focus {
-    border: 1px solid #60a5fa;
-    background-color: #0a1220;
-}
-
-QLineEdit#hexInput {
-    font-family: "Consolas", "Cascadia Mono", "Courier New";
-    color: #a7f3d0;
-}
-
-/* ===========================
-   ComboBox (tighter)
-   =========================== */
-
-QComboBox {
-    background-color: #0b0f17;
-    border: 1px solid #2a3242;
-    border-radius: 5px;
-    padding: 3px 6px;
-}
-
-QComboBox::drop-down {
-    width: 20px;                 /* tighter */
-    border-left: 1px solid #2a3242;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-    background-color: #0b0f17;
-}
-
-QComboBox QAbstractItemView {
-    background-color: #0b0f17;
-    border: 1px solid #2a3242;
-    selection-background-color: #1f2a44;
-    selection-color: #e5e7eb;
-    outline: 0;
-}
-
-/* ===========================
-   Buttons (compact)
-   =========================== */
-
-QPushButton {
-    background-color: #182033;
-    border: 1px solid #2a3242;
-    border-radius: 6px;
-    padding: 4px 10px;           /* smaller height */
-    font-weight: 600;
-}
-
-QPushButton:hover {
-    background-color: #1c2942;
-    border: 1px solid #3b4760;
-}
-
-QPushButton:pressed {
-    background-color: #0f172a;
-    border: 1px solid #60a5fa;
-}
-
-QPushButton:disabled {
-    background-color: #121827;
-    border: 1px solid #20283a;
-    color: #667085;
-}
-
-QPushButton#sendButton {
-    background-color: #1d4ed8;
-    border: 1px solid #3b82f6;
-}
-
-QPushButton#sendButton:hover { background-color: #2563eb; }
-QPushButton#sendButton:pressed { background-color: #1e40af; }
-
-/* ===========================
-   Tabs (compact)
-   =========================== */
-
+/* --- Tabs (The Breadcrumbs look) --- */
 QTabWidget::pane {
-    border: 1px solid #2a3242;
-    border-radius: 6px;
+    border: 1px solid #E0E0E0;
+    background: #FFFFFF;
+    border-radius: 8px;
     top: -1px;
-    background-color: #131722;
 }
 
 QTabBar::tab {
-    background-color: #0f1320;
-    color: #93a4bd;
-    border: 1px solid #2a3242;
-    border-bottom: none;
-    padding: 5px 10px;          /* shorter tabs */
-    margin-right: 3px;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
+    background: #F0EEE4;
+    padding: 10px 25px;
+    margin-right: 5px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    color: #7F8C8D;
+    font-weight: bold;
 }
 
 QTabBar::tab:selected {
-    background-color: #131722;
-    color: #7dd3fc;
-    border: 1px solid #2a3242;
-    border-bottom: 1px solid #131722;
-    font-weight: 700;
+    background: #FFFFFF;
+    color: #2B3446;
+    border-top: 3px solid #EDB96F; /* Top accent bar */
 }
 
-/* ===========================
-   Tables (Telemetry) - denser rows
-   =========================== */
+/* --- Inputs & Combo Boxes --- */
+QLineEdit, QComboBox, QSpinBox {
+    background-color: #FFFFFF;
+    border: 1px solid #D1D1D1;
+    border-radius: 5px;
+    padding: 5px;
+    min-height: 25px;
+}
 
+QLineEdit:focus, QComboBox:focus {
+    border: 1.5px solid #EDB96F;
+}
+
+/* --- Buttons --- */
+QPushButton {
+    background-color: #EDB96F;
+    color: #000000;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 13px; /* <--- Explicitly set here */
+    border: 1px solid #D4A35D;
+}
+
+QPushButton:hover {
+    font-size: 13px; /* <--- Explicitly set here */
+    background-color: #f5c98d;
+    border: 1px solid #EDB96F;
+}
+
+QPushButton:pressed {
+    font-size: 13px; /* <--- Re-state to prevent calculation errors */
+    padding-top: 11px; /* Subtle "click" feel without changing font size */
+    padding-bottom: 9px;
+    background-color: #d69f56;
+}
+
+/* Specific Style for "Connect" to make it stand out (if you set object name) */
+QPushButton#connect_btn {
+    background-color: #2B3446;
+    color: #FFFFFF;
+}
+
+/* --- Tables (The Telemetry & Packet Monitor) --- */
 QTableWidget {
-    background-color: #0b0f17;
-    border: 1px solid #2a3242;
-    border-radius: 6px;
-    gridline-color: #20283a;
-    alternate-background-color: #0f1522;
-    selection-background-color: #1f2a44;
-    selection-color: #e5e7eb;
+    background-color: #FFFFFF;
+    border: none;
+    gridline-color: #F0F0F0;
+    alternate-background-color: #F9F9F9;
 }
 
 QHeaderView::section {
-    background-color: #111827;
+    background-color: #2B3446;
+    color: #FFFFFF;
+    padding: 12px;
     border: none;
-    border-right: 1px solid #2a3242;
-    border-bottom: 1px solid #2a3242;
-    padding: 4px 6px;           /* tighter header */
-    color: #cbd5e1;
-    font-weight: 700;
+    font-weight: bold;
+    text-align: left;
 }
 
-QTableWidget::item {
-    padding: 2px 6px;           /* denser cells */
+/* This ensures the table and console always have a healthy size */
+QTableWidget#packet_table {
+    min-height: 250px;
 }
 
-/* ===========================
-   Lists (Events)
-   =========================== */
-
-QListWidget {
-    background-color: #0b0f17;
-    border: 1px solid #2a3242;
-    border-radius: 6px;
-    padding: 4px;
+QTextEdit#console_output {
+    min-height: 150px;
 }
 
-QListWidget::item {
-    padding: 4px 6px;
-    border-radius: 5px;
+/* --- Console (The Matrix Look) --- */
+QTextEdit#console_output {
+    background-color: #1E1E1E; /* Dark console for professional feel */
+    color: #00FF41; /* Classic Terminal Green or use #FFFFFF */
+    border-radius: 8px;
+    padding: 10px;
+    font-family: 'Consolas', 'Courier New', monospace;
 }
 
-/* ===========================
-   Console / Log
-   =========================== */
-
-QPlainTextEdit#logConsole, QTextEdit#logConsole {
-    font-family: "Consolas", "Cascadia Mono", "Courier New";
-    background-color: #060a10;
-    border: 1px solid #2a3242;
-    border-radius: 6px;
-    color: #b9c2d3;
-}
-
-/* Scrollbars: slim */
+/* --- ScrollBars (Thin & Modern) --- */
 QScrollBar:vertical {
-    background: transparent;
-    width: 10px;
-    margin: 0px;
+    border: none;
+    background: #F8F7F2;
+    width: 8px;
 }
+
 QScrollBar::handle:vertical {
-    background: #2a3242;
+    background: #D1D1D1;
     min-height: 20px;
-    border-radius: 5px;
+    border-radius: 4px;
 }
+
 QScrollBar::handle:vertical:hover {
-    background: #3b4760;
+    background: #EDB96F;
 }
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-    height: 0px;
+
+/* --- QComboBox Modernization --- */
+QComboBox {
+    background-color: #FFFFFF;
+    border: 1px solid #D1D1D1;
+    border-radius: 6px;
+    padding: 5px 10px;
+    min-height: 25px;
+    font-size: 13px;
+}
+
+/* This targets the button area on the right */
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 25px;
+    border-left: 1px solid #D1D1D1; /* Subtle divider line */
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background: #F8F7F2; /* Slight contrast for the button area */
+}
+
+/* This styles the actual arrow icon */
+QComboBox::down-arrow {
+    image: none; /* Remove default icon */
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #2B3446; /* The Navy color for the arrow */
+    margin-top: 2px;
+}
+
+QComboBox::down-arrow:on { /* When open */
+    top: 1px;
+}
+
+/* Optional: Styling the dropdown menu itself */
+QComboBox QAbstractItemView {
+    background-color: #FFFFFF;
+    border: 1px solid #D1D1D1;
+    selection-background-color: #EDB96F;
+    selection-color: #000000;
+    outline: 0;
+    font-size: 13px;
 }

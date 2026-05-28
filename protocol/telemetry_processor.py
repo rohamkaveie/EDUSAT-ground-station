@@ -25,10 +25,11 @@ class TelemetryProcessor:
 
     def feed(self, data: bytes):
         self.buffer.extend(data)
-        print(self.buffer)
+        # print(self.buffer)
         packets = []
 
         while True:
+            # print('parsing...')
             # 1. Look for the 2-byte SYNC: 0xAAAA
             sync_index = self.buffer.find(b'\xAA\xAA')
             
@@ -89,6 +90,8 @@ class TelemetryProcessor:
                 "payload": payload,
                 "length": payload_len,
             })
+
+        # print(packets)
             
         return packets
 
