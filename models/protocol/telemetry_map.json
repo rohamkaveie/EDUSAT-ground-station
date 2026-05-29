@@ -1,11 +1,31 @@
 {
+  "version": "1.0",
+  "mission": "CubeSat-V1",
+  
   "telemetry": {
-    "0x0001": {"name": "LED_State", "unit": "V", "scale": 1},
-    "0x0002": {"name": "Battery Temp", "unit": "°C", "scale": 0.1}
+    "1": { "name": "led_state", "kind": "scalar", "format": "u8", "unit": "state", "enum": { "0": "OFF", "1": "ON" } },
+    "2": { 
+        "name": "imu_data", "kind": "struct", "unit": "m/s^2, deg/s",
+        "fields": [
+            {"name": "accel_x", "format": "f32"}, {"name": "accel_y", "format": "f32"}, {"name": "accel_z", "format": "f32"},
+            {"name": "gyro_x", "format": "f32"}, {"name": "gyro_y", "format": "f32"}, {"name": "gyro_z", "format": "f32"}
+        ]
+    },
+    "3": { "name": "battery_voltage", "kind": "scalar", "format": "f32", "unit": "V" }
   },
+
   "events": {
-    "0xF001": {"message": "Low Battery Warning"},
-    "0xF002": {"message": "Deployment Successful"}
+    "100": { "name": "SYSTEM_BOOT", "severity": "info", "msg": "Satellite boot sequence complete." },
+    "101": { "name": "DEPLOY_FAIL", "severity": "critical", "msg": "Deployment mechanism reported failure!" },
+    "200": { "name": "BATT_LOW", "severity": "warning", "msg": "Battery levels critical (< 3.6V)" }
+  },
+
+  "blobs": {
+    "1000": { 
+        "name": "camera_frame_chunk", 
+        "kind": "blob", 
+        "description": "Image data segment. Requires reassembly logic.",
+        "max_size": 256
+    }
   }
 }
-

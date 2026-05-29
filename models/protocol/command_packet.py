@@ -37,8 +37,6 @@ def build_command_packet(opcode: bytes, args: bytes = b"") -> bytes:
 
     packet = bytes([length]) + data
 
-    # print(packet)
-
     crc = compute_crc(packet)
 
 
