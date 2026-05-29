@@ -1,28 +1,25 @@
 from PyQt6.QtCore import QThread, pyqtSignal
-from protocol.telemetry_processor import TelemetryProcessor
 
 class ReceiverThread(QThread):
-    packet_received = pyqtSignal(dict)  # Emits the parsed packet dict
-    raw_received = pyqtSignal(bytes)    # Emits raw data for monitor
+    raw_received = pyqtSignal(bytes)
     status_message = pyqtSignal(str)
     error_occurred = pyqtSignal(str)
 
-    def __init__(self, serial_interface,tlm_processor):
+    def __init__(self, serial_interface):
         super().__init__()
         self.serial_interface = serial_interface
-        self.tlm_processor = tlm_processor
-        self.running = True
+        self._running = True
 
     def run(self):
-        while self.running:
-            data = self.serial_interface.read_all()
-            if data:
-                self.raw_received.emit(data)
-                # Feed to processor and get completed packets
-                packets = self.tlm_processor.feed(data)
-                for pkt in packets:
-                    self.packet_received.emit(pkt)
-            self.msleep(100)
+        while self._running:
+            try:
+                data = self.serial_interface.read_all()
+                if data:
+                    self.raw_received.emit(data)
+                self.msleep(100)
+            except Exception as e:
+                self.error_occurred.emit(str(e))
+                self.msleep(200)
 
     def stop(self):
-        self.running = False
+        self._running = False
