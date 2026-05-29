@@ -116,13 +116,15 @@ QHeaderView::section {
 }
 
 /* This ensures the table and console always have a healthy size */
+/*
 QTableWidget#packet_table {
-    min-height: 250px;
+    min-height: 100px;
 }
 
 QTextEdit#console_output {
     min-height: 150px;
 }
+*/
 
 /* --- Console (The Matrix Look) --- */
 QTextEdit#console_output {

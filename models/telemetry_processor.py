@@ -77,11 +77,10 @@ class TelemetryProcessor(QObject):
             # computed_crc = self.compute_crc(frame[:-1])
             # if computed_crc != received_crc:
             #     continue
-
             pkt = {
                 "raw": frame,
                 "tlm_id": tlm_id,
-                "timestamp": timestamp_raw // 1000,
+                "timestamp": timestamp_raw,
                 "payload": payload,
                 "length": payload_len,
                 "crc": received_crc,

@@ -35,6 +35,7 @@ class PacketMonitorWidget(QWidget):
 
         # Table
         self.table = QTableWidget(0, 4)
+        self.table.setObjectName("packet_table")
         self.table.setHorizontalHeaderLabels(["Time", "Length", "HEX", "ASCII"])
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
@@ -57,6 +58,8 @@ class PacketMonitorWidget(QWidget):
     def add_packet(self, data: bytes):
         if not data:
             return
+
+        print(data)
 
         timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
         hex_str = " ".join(f"{b:02X}" for b in data)

@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem,
     QHeaderView,
     QListWidget,
+    QSplitter
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtCore import QTimer
@@ -36,7 +37,11 @@ class MainWindow(QMainWindow):
         self._build_ui()
   
         self.controller = GroundStationController()
+        self.controller.packet_received.connect(self._handle_received_packet)
+
         self.refresh_ports()    
+
+
 
 
         self.controller.status_message.connect(self.log)
@@ -56,19 +61,37 @@ class MainWindow(QMainWindow):
 
     def toggle_connection(self):
         if not self.controller.is_connected():
-            port = self.combo_ports.currentText()
-            baud = int(self.combo_baud.currentText())
+            port = self.port_combo.currentText()
+            baud = int(self.baud_combo.currentText())
             self.controller.connect_serial(port, baud)
-            self.btn_connect.setText("Disconnect")
+            self.connect_button.setText("Disconnect")
         else:
             self.controller.disconnect_serial()
-            self.btn_connect.setText("Connect")
+            self.connect_button.setText("Connect")
 
     def log(self, message: str):
         self.console.append(message)
 
     def _log_server_command(self, cmd: dict):
         self.log(f"--- Incoming Server Command: ID {cmd.get('cmd_id')} ---")
+
+    def _handle_received_packet(self, packet :dict):
+        self.packet_monitor.add_packet(packet['raw'])
+        self._add_packet_to_telemetry_tab(packet)
+
+    def _add_packet_to_telemetry_tab(self, packet: dict):
+        row = self.tlm_table.rowCount()
+        self.tlm_table.insertRow(row)
+
+        # Example fields — adjust keys to your packet structure
+        variable = packet.get("tlm_id", "packet")
+        timestamp = packet.get("timestamp", "")
+        value = packet.get("payload", "")
+
+        self.tlm_table.setItem(row, 0, QTableWidgetItem(str(variable)))
+        self.tlm_table.setItem(row, 1, QTableWidgetItem(str(timestamp)))
+        self.tlm_table.setItem(row, 2, QTableWidgetItem(str(value)))
+
 
     def closeEvent(self, event):
         """Ensure threads close when window is closed."""
@@ -78,15 +101,16 @@ class MainWindow(QMainWindow):
     def _build_ui(self):
         central = QWidget()
         self.setCentralWidget(central)
+        
         main_layout = QVBoxLayout(central)
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setSpacing(15)
 
-        # Example: 
-        main_layout.setStretch(0, 1)  # Connection Group (Small)
-        main_layout.setStretch(1, 4)  # Tabs/Telemetry (Large)
-        main_layout.setStretch(2, 2)  # Packet Monitor (Medium-Large)
-        main_layout.setStretch(3, 2)  # Console (Medium-Large)
+        splitter = QSplitter(Qt.Orientation.Vertical)
+
+        main_layout.addWidget(splitter)
+
+
 
         # ---------------- Connection Panel ----------------
         connection_group = QGroupBox("Connection")
@@ -112,7 +136,8 @@ class MainWindow(QMainWindow):
         connection_layout.addWidget(self.connect_button)
 
         connection_group.setLayout(connection_layout)
-        main_layout.addWidget(connection_group)
+        # main_layout.addWidget(connection_group)
+        splitter.addWidget(connection_group)
 
         # ---------------- Top Section ----------------
 
@@ -189,8 +214,8 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(graph_tab, "Graph")
 
         # Add tab widget to main layout
-        main_layout.addWidget(self.tabs)
-
+        # main_layout.addWidget(self.tabs)
+        splitter.addWidget(self.tabs)
         # ---------------- Command Panel ----------------
         command_group = QGroupBox("Commands")
         command_layout = QHBoxLayout()
@@ -209,11 +234,17 @@ class MainWindow(QMainWindow):
         command_layout.addWidget(self.cmd_input)
         command_layout.addWidget(self.send_cmd_button)
 
-        main_layout.addLayout(command_layout)
+        command_group.setLayout(command_layout)
+
+        # main_layout.addLayout(command_layout)
+        # main_layout.addWidget(command_group,1)
+
+        splitter.addWidget(command_group)
 
         # ---------------- Packet Monitor ----------------
         self.packet_monitor = PacketMonitorWidget(max_rows=500)
-        main_layout.addWidget(self.packet_monitor, 2)
+        # main_layout.addWidget(self.packet_monitor, 2)
+        splitter.addWidget(self.packet_monitor)
 
         # ---------------- Log Console ----------------
         console_group = QGroupBox("Console")
@@ -225,7 +256,8 @@ class MainWindow(QMainWindow):
 
         console_layout.addWidget(self.console)
         console_group.setLayout(console_layout)
-        main_layout.addWidget(console_group, 1)
+        splitter.addWidget(console_group)
+        # main_layout.addWidget(console_group, 1)
 
 
 
