@@ -24,27 +24,56 @@ import pyqtgraph as pg
 
 import re
 
-from communication.serial_interface import SerialInterface
-from communication.receiver_thread import ReceiverThread
-from gui.packet_monitor import PacketMonitorWidget
-from protocol.command_packet import build_command_packet
-from protocol.telemetry_processor import TelemetryProcessor
-from protocol.tlm_decoder import TelemetryDecoder
-
-
+from controllers.ground_station_controller import GroundStationController
+from views.packet_monitor import PacketMonitorWidget
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        # ... (Your existing UI setup code / UI.load or Manual Setup) ...
         self.resize(1200, 800)
 
-        self.serial_interface = SerialInterface()
-        self.tlm_processor = TelemetryProcessor() 
-        self.decoder = TelemetryDecoder()
-        self.receiver_thread = None
-
         self._build_ui()
-        self.refresh_ports()
+  
+        self.controller = GroundStationController()
+        self.refresh_ports()    
+
+
+        self.controller.status_message.connect(self.log)
+        self.controller.error_message.connect(self.log)
+
+
+    def send_command(self):
+
+        hex_text = self.cmd_input.text().strip()
+        self.controller.sendCommand(hex_text)        
+
+    def refresh_ports(self):
+        self.port_combo.clear()
+        ports = self.controller.getListPorts()
+        self.port_combo.addItems(ports)
+        self.log(f"Found ports: {ports if ports else 'None'}")
+
+    def toggle_connection(self):
+        if not self.controller.is_connected():
+            port = self.combo_ports.currentText()
+            baud = int(self.combo_baud.currentText())
+            self.controller.connect_serial(port, baud)
+            self.btn_connect.setText("Disconnect")
+        else:
+            self.controller.disconnect_serial()
+            self.btn_connect.setText("Connect")
+
+    def log(self, message: str):
+        self.console.append(message)
+
+    def _log_server_command(self, cmd: dict):
+        self.log(f"--- Incoming Server Command: ID {cmd.get('cmd_id')} ---")
+
+    def closeEvent(self, event):
+        """Ensure threads close when window is closed."""
+        self.controller.cleanup()
+        event.accept()
 
     def _build_ui(self):
         central = QWidget()
@@ -198,134 +227,5 @@ class MainWindow(QMainWindow):
         console_group.setLayout(console_layout)
         main_layout.addWidget(console_group, 1)
 
-    def refresh_ports(self):
-        self.port_combo.clear()
-        ports = self.serial_interface.list_ports()
-        self.port_combo.addItems(ports)
-        self.log(f"Found ports: {ports if ports else 'None'}")
 
-    def toggle_connection(self):
-        if self.serial_interface.is_connected():
-            self.disconnect_serial()
-        else:
-            self.connect_serial()
 
-    def connect_serial(self):
-        port = self.port_combo.currentText()
-        baud = int(self.baud_combo.currentText())
-
-        if not port:
-            self.log("No COM port selected.")
-            return
-
-        try:
-            self.serial_interface.connect(port, baud)
-            self.receiver_thread = ReceiverThread(self.serial_interface, self.tlm_processor)
-            self.receiver_thread.raw_received.connect(self.handle_received_data)
-            self.receiver_thread.packet_received.connect(self.handle_telemetry_packets)
-
-            self.receiver_thread.status_message.connect(self.log)
-            self.receiver_thread.error_occurred.connect(self.log)
-            self.receiver_thread.start()
-
-            self.connect_button.setText("Disconnect")
-            self.log(f"Connected to {port} @ {baud}")
-        except Exception as e:
-            self.log(f"Connection error: {e}")
-
-    def disconnect_serial(self):
-        try:
-            if self.receiver_thread is not None:
-                self.receiver_thread.stop()
-                self.receiver_thread.wait()
-                self.receiver_thread = None
-
-            self.serial_interface.disconnect()
-            self.connect_button.setText("Connect")
-            self.log("Disconnected.")
-        except Exception as e:
-            self.log(f"Disconnection error: {e}")
-
-    def handle_received_data(self, data: bytes):
-        if not data:
-            return
-
-        # Add to packet monitor
-        self.packet_monitor.add_packet(data)
-
-        # Keep existing console logging too
-        hex_str = " ".join(f"{b:02X}" for b in data)
-        ascii_str = "".join(chr(b) if 32 <= b <= 126 else "." for b in data)
-
-        self.log(f"RX [{len(data)} bytes]")
-        self.log(f"HEX: {hex_str}")
-        self.log(f"ASCII: {ascii_str}")
-
-    def send_command(self):
-        if not self.serial_interface.is_connected():
-            self.log("Cannot send: not connected.")
-            return
-
-        hex_text = self.cmd_input.text().strip()
-
-        try:
-
-            clean_hex = re.sub(r'[^0-9A-Fa-f]', '', hex_text)
-
-            if len(clean_hex) % 2 != 0:
-                raise ValueError("Hex string must contain full bytes")
-
-            cmd_opcode = bytes.fromhex(clean_hex)
-
-            packet = build_command_packet(cmd_opcode)
-            self.serial_interface.write(packet)
-            self.log(f"Sent Packet: {packet}")
-        except Exception as e:
-            self.log(f"Send error: {e}")
-
-    def log(self, message: str):
-        self.console.append(message)
-
-    def closeEvent(self, event):
-        try:
-            self.disconnect_serial()
-        except Exception:
-            pass
-        event.accept()
-
-    def update_telemetry_ui(self, data):
-        """
-        data = {"name": "Solar Voltage", "val": "3.75 V", "time": 12345}
-        """
-        name = data['name']
-        
-        # Check if row already exists for this variable
-        items = self.tlm_table.findItems(name, Qt.MatchFlag.MatchExactly)
-        
-        if items:
-            # Update existing row
-            row = items[0].row()
-            self.tlm_table.setItem(row, 1, QTableWidgetItem(str(data['time'])))
-            self.tlm_table.setItem(row, 2, QTableWidgetItem(data['val']))
-        else:
-            # Add new row
-            row = self.tlm_table.rowCount()
-            self.tlm_table.insertRow(row)
-            self.tlm_table.setItem(row, 0, QTableWidgetItem(name))
-            self.tlm_table.setItem(row, 1, QTableWidgetItem(str(data['time'])))
-            self.tlm_table.setItem(row, 2, QTableWidgetItem(data['val']))
-
-    def handle_telemetry_packets(self, pkt):
-        category, data = self.decoder.decode(pkt['tlm_id'], pkt['payload'],pkt['timestamp'])
-
-        # print(data)        
-        if category == "telemetry":
-            # Update Telemetry Tab
-
-            self.update_telemetry_ui(data) 
-            # Update Graph Tab
-            # self.update_graph(data['name'], float(data['val'].split()[0]))
-            
-        elif category == "event":
-            # Update Event Tab
-            self.event_list.addItem(f"[{data['time']}] {data['msg']} (Code: {data['val']})")

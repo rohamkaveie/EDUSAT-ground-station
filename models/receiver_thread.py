@@ -16,10 +16,10 @@ class ReceiverThread(QThread):
                 data = self.serial_interface.read_all()
                 if data:
                     self.raw_received.emit(data)
-                self.msleep(100)
+                self.msleep(10)
             except Exception as e:
                 self.error_occurred.emit(str(e))
-                self.msleep(200)
+                self.msleep(20)
 
     def stop(self):
         self._running = False
