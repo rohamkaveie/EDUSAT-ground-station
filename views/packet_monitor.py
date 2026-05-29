@@ -59,8 +59,6 @@ class PacketMonitorWidget(QWidget):
         if not data:
             return
 
-        print(data)
-
         timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
         hex_str = " ".join(f"{b:02X}" for b in data)
         ascii_str = "".join(chr(b) if 32 <= b <= 126 else "." for b in data)

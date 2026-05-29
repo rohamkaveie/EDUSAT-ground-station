@@ -23,10 +23,13 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtCore import QTimer
 import pyqtgraph as pg
 
+from datetime import datetime, timezone
+
 import re
 
 from controllers.ground_station_controller import GroundStationController
 from views.packet_monitor import PacketMonitorWidget
+from models.protocol.tlm_decoder import TelemetryDecoder
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -35,12 +38,15 @@ class MainWindow(QMainWindow):
         self.resize(1200, 800)
 
         self._build_ui()
+
+        self._tlm_row_by_var: dict[str, int] = {}
   
+        self.decoder = TelemetryDecoder("./models/protocol/telemetry_map.json")
+
         self.controller = GroundStationController()
         self.controller.packet_received.connect(self._handle_received_packet)
 
         self.refresh_ports()    
-
 
 
 
@@ -75,9 +81,44 @@ class MainWindow(QMainWindow):
     def _log_server_command(self, cmd: dict):
         self.log(f"--- Incoming Server Command: ID {cmd.get('cmd_id')} ---")
 
-    def _handle_received_packet(self, packet :dict):
-        self.packet_monitor.add_packet(packet['raw'])
-        self._add_packet_to_telemetry_tab(packet)
+    def _handle_received_packet(self, packet: dict):
+        # always show raw bytes in packet monitor
+        if "raw" in packet:
+            self.packet_monitor.add_packet(packet["raw"])
+
+        # local decode for GUI only
+        try:
+            decoded = self.decoder.decode(packet["tlm_id"], packet["payload"])
+        except Exception as e:
+            self.log(f"Decode Error: {e}")
+            return
+
+        if not decoded:
+            return
+
+        # Adjust this part to match your decoder output shape
+        if decoded.get("type") == "telemetry":
+                self._upsert_tlm_row(str(decoded.get("name")), str(decoded.get("value")))
+
+    def _upsert_tlm_row(self, variable: str, value_text: str) -> None:
+        """Insert row for variable if missing; otherwise update existing row."""
+        # system time (local)
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
+        row = self._tlm_row_by_var.get(variable)
+        if row is None:
+            row = self.tlm_table.rowCount()
+            self.tlm_table.insertRow(row)
+            self._tlm_row_by_var[variable] = row
+
+            # Create items once so later we just .setText()
+            self.tlm_table.setItem(row, 0, QTableWidgetItem(variable))
+            self.tlm_table.setItem(row, 1, QTableWidgetItem(timestamp))
+            self.tlm_table.setItem(row, 2, QTableWidgetItem(value_text))
+        else:
+            # Update timestamp + value
+            self.tlm_table.item(row, 1).setText(timestamp)
+            self.tlm_table.item(row, 2).setText(value_text)
 
     def _add_packet_to_telemetry_tab(self, packet: dict):
         row = self.tlm_table.rowCount()
